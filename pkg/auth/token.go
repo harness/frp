@@ -66,30 +66,16 @@ func (auth *TokenAuthSetterVerifier) SetNewWorkConn(newWorkConnMsg *msg.NewWorkC
 	return nil
 }
 
-func extractBetweenDots(input string) string {
-	firstDotIndex := strings.Index(input, ".")
-	if firstDotIndex == -1 {
-		return ""
-	}
+func validateApiKey(apiKey string, endPoint string) bool {
 
-	secondDotIndex := strings.Index(input[firstDotIndex+1:], ".")
-	if secondDotIndex == -1 {
-		return ""
-	}
-
-	extracted := input[firstDotIndex+1 : firstDotIndex+1+secondDotIndex]
-
-	return extracted
-}
-func validateApiKey(apiKey string) bool {
-	accoundId := extractBetweenDots(apiKey)
+	accoundId := util.ExtractBetweenDots(apiKey)
 
 	if accoundId == "" {
 		fmt.Errorf("token in login doesn't match format. Can't extract account ID")
 		return false
 	}
 
-	reqUrl := "https://app.harness.io/authz/api/acl"
+	reqUrl := endPoint + "/authz/api/acl"
 
 	var formated = fmt.Sprintf(`{
     "permissions": [
@@ -135,12 +121,16 @@ func validateApiKey(apiKey string) bool {
 	return true
 }
 
-func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login) error {
+func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) error {
 	if !util.ConstantTimeEqString(util.GetAuthKey(auth.token, m.Timestamp), m.PrivilegeKey) {
 		return fmt.Errorf("token in login doesn't match token from configuration")
 	}
 
-	if !validateApiKey(m.ApiKey) {
+	if strings.Contains(endPoint, "localhost") {
+		return nil
+	}
+
+	if !validateApiKey(m.ApiKey, endPoint) {
 		return fmt.Errorf("Harness Api key isn't valid")
 	}
 

@@ -36,6 +36,7 @@ type HTTPPluginOptions struct {
 type ServerCommonConf struct {
 	legacyauth.ServerConfig `ini:",extends"`
 
+	HarnessEndpoint string `ini:"harness_endpoint" json:"harness_endpoint"`
 	// BindAddr specifies the address that the server binds to. By default,
 	// this value is "0.0.0.0".
 	BindAddr string `ini:"bind_addr" json:"bind_addr"`

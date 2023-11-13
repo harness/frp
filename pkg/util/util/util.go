@@ -144,3 +144,19 @@ func RandomSleep(duration time.Duration, minRatio, maxRatio float64) time.Durati
 func ConstantTimeEqString(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }
+
+func ExtractBetweenDots(input string) string {
+	firstDotIndex := strings.Index(input, ".")
+	if firstDotIndex == -1 {
+		return ""
+	}
+
+	secondDotIndex := strings.Index(input[firstDotIndex+1:], ".")
+	if secondDotIndex == -1 {
+		return ""
+	}
+
+	extracted := input[firstDotIndex+1 : firstDotIndex+1+secondDotIndex]
+
+	return extracted
+}
