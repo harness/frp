@@ -40,7 +40,7 @@ func NewAuthSetter(cfg v1.AuthClientConfig) (authProvider Setter) {
 }
 
 type Verifier interface {
-	VerifyLogin(*msg.Login) error
+	VerifyLogin(*msg.Login, string) error
 	VerifyPing(*msg.Ping) error
 	VerifyNewWorkConn(*msg.NewWorkConn) error
 }

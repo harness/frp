@@ -534,7 +534,7 @@ func (svr *Service) RegisterControl(ctlConn net.Conn, loginMsg *msg.Login) (err 
 		ctlConn.RemoteAddr().String(), loginMsg.Version, loginMsg.Hostname, loginMsg.Os, loginMsg.Arch)
 
 	// Check auth.
-	if err = svr.authVerifier.VerifyLogin(loginMsg); err != nil {
+	if err = svr.authVerifier.VerifyLogin(loginMsg, svr.cfg.HarnessEndpoint); err != nil {
 		return
 	}
 

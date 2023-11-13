@@ -24,6 +24,8 @@ import (
 type ServerConfig struct {
 	APIMetadata
 
+	HarnessEndpoint string `json:"harnessEndpoint,omitempty"`
+
 	Auth AuthServerConfig `json:"auth,omitempty"`
 	// BindAddr specifies the address that the server binds to. By default,
 	// this value is "0.0.0.0".

@@ -15,10 +15,17 @@
 package proxy
 
 import (
+	"bytes"
+	"crypto/tls"
+	"errors"
 	"fmt"
+	"github.com/fatedier/frp/pkg/util/util"
 	"net"
+	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
+	"time"
 
 	v1 "github.com/fatedier/frp/pkg/config/v1"
 )
@@ -73,6 +80,13 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 				pxy.rc.TCPPortManager.Release(pxy.realBindPort)
 			}
 		}()
+
+		err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint)
+
+		if err != nil {
+			return
+		}
+
 		listener, errRet := net.Listen("tcp", net.JoinHostPort(pxy.serverCfg.ProxyBindAddr, strconv.Itoa(pxy.realBindPort)))
 		if errRet != nil {
 			err = errRet
@@ -86,6 +100,56 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	remoteAddr = fmt.Sprintf(":%d", pxy.realBindPort)
 	pxy.startCommonTCPListenersHandler()
 	return
+}
+
+func registerClient(apiKey string, port int, endpoint string) (err error) {
+
+	client := &http.Client{}
+
+	if strings.Contains(endpoint, "localhost") {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client = &http.Client{
+			Transport: tr,
+			Timeout:   10 * time.Second,
+		}
+	}
+
+	accoundId := util.ExtractBetweenDots(apiKey)
+
+	if accoundId == "" {
+		fmt.Errorf("token in login doesn't match format. Can't extract account ID")
+		err = errors.New("Bad api key")
+	}
+
+	url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endpoint, accoundId)
+	contentType := "application/json"
+
+	payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("x-api-key", apiKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Error registering frp client for account:" + accoundId)
+	}
+
+	fmt.Println("Response Status:", resp.Status)
+
+	return nil
 }
 
 func (pxy *TCPProxy) Close() {

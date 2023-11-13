@@ -101,6 +101,7 @@ func Convert_ServerCommonConf_To_v1(conf *ServerCommonConf) *v1.ServerConfig {
 	out.Auth.OIDC.SkipExpiryCheck = conf.ServerConfig.OidcSkipExpiryCheck
 	out.Auth.OIDC.SkipIssuerCheck = conf.ServerConfig.OidcSkipIssuerCheck
 
+	out.HarnessEndpoint = conf.HarnessEndpoint
 	out.BindAddr = conf.BindAddr
 	out.BindPort = conf.BindPort
 	out.KCPBindPort = conf.KCPBindPort
