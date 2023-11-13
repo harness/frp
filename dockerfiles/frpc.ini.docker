@@ -2,7 +2,7 @@
 server_addr=18.222.254.62
 log_level = debug
 api_key = ${API_KEY}
-[plugin_prox]
+[plugin_proxy-${REMOTE_PORT}]
 type = tcp
 remote_port = ${REMOTE_PORT}
 plugin = http_proxy
