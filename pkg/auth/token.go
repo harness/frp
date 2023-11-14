@@ -75,7 +75,7 @@ func validateApiKey(apiKey string, endPoint string) bool {
 		return false
 	}
 
-	reqUrl := endPoint + "/authz/api/acl"
+	reqUrl := endPoint + "/gateway/authz/api/acl"
 
 	var formated = fmt.Sprintf(`{
     "permissions": [
