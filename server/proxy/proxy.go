@@ -16,6 +16,7 @@ package proxy
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -31,11 +32,16 @@ import (
 	v1 "github.com/fatedier/frp/pkg/config/v1"
 	"github.com/fatedier/frp/pkg/msg"
 	plugin "github.com/fatedier/frp/pkg/plugin/server"
+	"github.com/fatedier/frp/pkg/transport"
 	"github.com/fatedier/frp/pkg/util/limit"
 	utilnet "github.com/fatedier/frp/pkg/util/net"
 	"github.com/fatedier/frp/pkg/util/xlog"
 	"github.com/fatedier/frp/server/controller"
 	"github.com/fatedier/frp/server/metrics"
+)
+
+const (
+	connReadTimeout time.Duration = 10 * time.Second
 )
 
 var proxyFactoryRegistry = map[reflect.Type]func(*BaseProxy) Proxy{}
@@ -73,9 +79,10 @@ type BaseProxy struct {
 	loginMsg      *msg.Login
 	configurer    v1.ProxyConfigurer
 
-	mu  sync.RWMutex
-	xl  *xlog.Logger
-	ctx context.Context
+	mu        sync.RWMutex
+	xl        *xlog.Logger
+	ctx       context.Context
+	tlsConfig *tls.Config
 }
 
 func (pxy *BaseProxy) GetName() string {
@@ -201,6 +208,21 @@ func (pxy *BaseProxy) startCommonTCPListenersHandler() {
 					xl.Warn("listener is closed: %s", err)
 					return
 				}
+				if pxy.tlsConfig != nil {
+					originConn := c
+					tlsc, isTLS, custom, err := utilnet.CheckAndEnableTLSServerConnWithTimeout(
+						c,
+						pxy.tlsConfig,
+						false,
+						connReadTimeout)
+					if err != nil {
+						xl.Warn("CheckAndEnableTLSServerConnWithTimeout error: %v", err)
+						originConn.Close()
+						continue
+					}
+					xl.Trace("check TLS connection success, isTLS: %v custom: %v", isTLS, custom)
+					c = tlsc
+				}
 				xl.Info("get a user connection [%s]", c.RemoteAddr().String())
 				go pxy.handleUserTCPConnection(c)
 			}
@@ -291,6 +313,17 @@ func NewProxy(ctx context.Context, options *Options) (pxy Proxy, err error) {
 		limiter = rate.NewLimiter(rate.Limit(float64(limitBytes)), int(limitBytes))
 	}
 
+	var tlsConfig *tls.Config
+	if options.ServerCfg.Transport.TLS.Force {
+		tlsConfig, err = transport.NewServerTLSConfig(
+			options.ServerCfg.Transport.TLS.TLSConfig.CertFile,
+			options.ServerCfg.Transport.TLS.TLSConfig.KeyFile,
+			options.ServerCfg.Transport.TLS.TLSConfig.TrustedCaFile)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	basePxy := BaseProxy{
 		name:          configurer.GetBaseConfig().Name,
 		rc:            options.ResourceController,
@@ -304,6 +337,7 @@ func NewProxy(ctx context.Context, options *Options) (pxy Proxy, err error) {
 		userInfo:      options.UserInfo,
 		loginMsg:      options.LoginMsg,
 		configurer:    configurer,
+		tlsConfig:     tlsConfig,
 	}
 
 	factory := proxyFactoryRegistry[reflect.TypeOf(configurer)]
