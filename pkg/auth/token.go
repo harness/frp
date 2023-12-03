@@ -66,13 +66,12 @@ func (auth *TokenAuthSetterVerifier) SetNewWorkConn(newWorkConnMsg *msg.NewWorkC
 	return nil
 }
 
-func validateApiKey(apiKey string, endPoint string) bool {
+func validateApiKey(apiKey string, endPoint string) error {
 
 	accoundId := util.ExtractBetweenDots(apiKey)
 
 	if accoundId == "" {
 		fmt.Errorf("token in login doesn't match format. Can't extract account ID")
-		return false
 	}
 
 	reqUrl := endPoint + "/gateway/authz/api/acl"
@@ -93,32 +92,28 @@ func validateApiKey(apiKey string, endPoint string) bool {
 
 	req, err := http.NewRequest("POST", reqUrl, bytes.NewReader([]byte(formated)))
 	if err != nil {
-		fmt.Errorf(err.Error())
-		return false
+		return fmt.Errorf(err.Error())
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("x-api-key", apiKey)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Errorf("Error calling api call for api key validation")
-		return false
+		return fmt.Errorf(err.Error())
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Errorf("Api key validation response error")
-		return false
+		return fmt.Errorf(err.Error())
 	}
 
 	searchSubstring := `"permitted":true`
 	bodyStr := string(body)
 
 	if !strings.Contains(bodyStr, searchSubstring) {
-		fmt.Errorf("The API key is not valid")
-		return false
+		return fmt.Errorf("API key is not valid")
 	}
 
-	return true
+	return nil
 }
 
 func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) error {
@@ -130,8 +125,9 @@ func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) 
 		return nil
 	}
 
-	if !validateApiKey(m.ApiKey, endPoint) {
-		return fmt.Errorf("Harness Api key isn't valid")
+	var err error
+	if err = validateApiKey(m.ApiKey, endPoint); err != nil {
+		return err
 	}
 
 	return nil
