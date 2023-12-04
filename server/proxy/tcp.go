@@ -81,7 +81,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 			}
 		}()
 
-		err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint)
+		err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false)
 
 		if err != nil {
 			return
@@ -102,7 +102,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	return
 }
 
-func registerClient(apiKey string, port int, endpoint string) (err error) {
+func registerClient(apiKey string, port int, endpoint string, shouldDelete bool) (err error) {
 
 	client := &http.Client{}
 
@@ -129,7 +129,17 @@ func registerClient(apiKey string, port int, endpoint string) (err error) {
 
 	payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	var method string
+
+	if shouldDelete {
+		// Condition is true, store "DELETE"
+		method = "DELETE"
+	} else {
+		// Condition is false, store "POST"
+		method = "POST"
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return
 	}
