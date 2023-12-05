@@ -81,7 +81,8 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 			}
 		}()
 
-		if err = pxy.registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint); err != nil {
+
+		if err = pxy.registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false); err != nil {
 			return
 		}
 		listener, errRet := net.Listen("tcp", net.JoinHostPort(pxy.serverCfg.ProxyBindAddr, strconv.Itoa(pxy.realBindPort)))
@@ -99,7 +100,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	return
 }
 
-func (pxy *TCPProxy) registerClient(apiKey string, port int, endpoint string) (err error) {
+func (pxy *TCPProxy) registerClient(apiKey string, port int, endpoint string, shouldDelete bool) (err error) {
 
 	client := &http.Client{}
 
@@ -127,7 +128,15 @@ func (pxy *TCPProxy) registerClient(apiKey string, port int, endpoint string) (e
 
 	payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	var method string
+
+	if shouldDelete {
+		method = "DELETE"
+	} else {
+		method = "POST"
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return
 	}
