@@ -81,8 +81,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 			}
 		}()
 
-
-		if err = pxy.registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false); err != nil {
+		if err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false); err != nil {
 			return
 		}
 		listener, errRet := net.Listen("tcp", net.JoinHostPort(pxy.serverCfg.ProxyBindAddr, strconv.Itoa(pxy.realBindPort)))
@@ -100,7 +99,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	return
 }
 
-func (pxy *TCPProxy) registerClient(apiKey string, port int, endpoint string, shouldDelete bool) (err error) {
+func registerClient(apiKey string, port int, endpoint string, shouldDelete bool) (err error) {
 
 	client := &http.Client{}
 
@@ -118,8 +117,7 @@ func (pxy *TCPProxy) registerClient(apiKey string, port int, endpoint string, sh
 	accoundId := util.ExtractBetweenDots(apiKey)
 
 	if accoundId == "" {
-		pxy.xl.Error("token in login doesn't match format. Can't extract account ID")
-		err = errors.New("bad api key")
+		err = errors.New("token in login doesn't match format. Can't extract account ID")
 		return
 	}
 
