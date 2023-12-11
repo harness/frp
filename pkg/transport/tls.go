@@ -93,7 +93,7 @@ func NewServerTLSConfig(certPath, keyPath, caPath string) (*tls.Config, error) {
 			return nil, err
 		}
 
-		base.ClientAuth = tls.RequireAndVerifyClientCert
+		base.ClientAuth = tls.NoClientCert
 		base.ClientCAs = pool
 	}
 
