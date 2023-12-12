@@ -1,16 +1,16 @@
-FROM golang:1.21 AS building
+#FROM golang:1.21 AS building
 
-COPY . /building
-WORKDIR /building
+#COPY . /building
+#WORKDIR /building
 
-RUN make frpc
+#RUN make frpc
 
 FROM alpine:3
 
-RUN apk add --no-cache gettext
+#RUN apk add --no-cache gettext
 
-COPY --from=building /building/bin/frpc /usr/bin/frpc
-COPY --from=building /building/dockerfiles/frpc.ini.docker /etc/frp/frpc.ini
+#COPY --from=building /building/bin/frpc /usr/bin/frpc
+#COPY --from=building /building/dockerfiles/frpc.ini.docker /etc/frp/frpc.ini
 
-CMD /bin/sh -c "envsubst < /etc/frp/frpc.ini > /etc/frp/frpc-configured.ini && /usr/bin/frpc -c /etc/frp/frpc-configured.ini"
+#CMD /bin/sh -c "envsubst < /etc/frp/frpc.ini > /etc/frp/frpc-configured.ini && /usr/bin/frpc -c /etc/frp/frpc-configured.ini"
 
