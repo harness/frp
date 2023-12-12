@@ -1,5 +1,5 @@
 [common]
-server_addr=18.222.254.62
+server_addr = ${REMOTE_SERVER}
 log_level = debug
 api_key = ${API_KEY}
 [plugin_proxy-${REMOTE_PORT}]
