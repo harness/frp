@@ -1,7 +1,7 @@
 FROM golang:1.21 AS building
 
-#COPY . /building
-#WORKDIR /building
+COPY . /building
+WORKDIR /building
 
 #RUN make frpc
 
