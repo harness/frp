@@ -4,7 +4,8 @@ COPY . /building
 WORKDIR /building
 
 RUN git config --global --add safe.directory '*'
-RUN make frpc
+RUN env CGO_ENABLED=0  \
+RUN go build -trimpath  -o bin/frpc ./cmd/frpc
 
 FROM alpine:3
 
