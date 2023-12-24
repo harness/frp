@@ -99,11 +99,11 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	return
 }
 
-func registerClient(apiKey string, port int, endpoint string, shouldDelete bool) (err error) {
+func registerClient(apiKey string, port int, endpoints string, shouldDelete bool) (err error) {
 
 	client := &http.Client{}
 
-	if strings.Contains(endpoint, "localhost") {
+	if strings.Contains(endpoints, "localhost") {
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
@@ -121,39 +121,46 @@ func registerClient(apiKey string, port int, endpoint string, shouldDelete bool)
 		return
 	}
 
-	url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endpoint, accoundId)
-	contentType := "application/json"
+	result := strings.Split(endpoints, ",")
 
-	payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
+	for _, endPoint := range result {
+		endPoint = strings.TrimSpace(endPoint)
+		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
+		contentType := "application/json"
 
-	var method string
+		payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
 
-	if shouldDelete {
-		method = "DELETE"
-	} else {
-		method = "POST"
+		var method string
+
+		if shouldDelete {
+			method = "DELETE"
+		} else {
+			method = "POST"
+		}
+
+		req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		req.Header.Set("Content-Type", contentType)
+		req.Header.Set("x-api-key", apiKey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			fmt.Println("Response Status:", resp.Status)
+			return nil
+		}
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
-	if err != nil {
-		return
-	}
-
-	req.Header.Set("Content-Type", contentType)
-	req.Header.Set("x-api-key", apiKey)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Error registering frp client for account:" + accoundId)
-	}
-
-	fmt.Println("Response Status:", resp.Status)
-	return nil
+	return errors.New("Error registering frp client for account:" + accoundId)
 }
 
 func (pxy *TCPProxy) Close() {

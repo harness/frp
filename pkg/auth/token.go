@@ -16,6 +16,7 @@ package auth
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -66,7 +67,7 @@ func (auth *TokenAuthSetterVerifier) SetNewWorkConn(newWorkConnMsg *msg.NewWorkC
 	return nil
 }
 
-func validateApiKey(apiKey string, endPoint string) error {
+func validateApiKey(apiKey string, endPoints string) error {
 
 	accoundId := util.ExtractBetweenDots(apiKey)
 
@@ -74,9 +75,13 @@ func validateApiKey(apiKey string, endPoint string) error {
 		fmt.Errorf("token in login doesn't match format. Can't extract account ID")
 	}
 
-	reqUrl := endPoint + "/gateway/authz/api/acl"
+	result := strings.Split(endPoints, ",")
 
-	var formated = fmt.Sprintf(`{
+	for _, endPoint := range result {
+		endPoint = strings.TrimSpace(endPoint)
+		reqUrl := endPoint + "/gateway/authz/api/acl"
+
+		var formated = fmt.Sprintf(`{
     "permissions": [
       {
         "resourceScope": {
@@ -90,30 +95,36 @@ func validateApiKey(apiKey string, endPoint string) error {
     ]
   	}`, accoundId)
 
-	req, err := http.NewRequest("POST", reqUrl, bytes.NewReader([]byte(formated)))
-	if err != nil {
-		return fmt.Errorf(err.Error())
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("x-api-key", apiKey)
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf(err.Error())
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return fmt.Errorf(err.Error())
+		req, err := http.NewRequest("POST", reqUrl, bytes.NewReader([]byte(formated)))
+		if err != nil {
+			return fmt.Errorf(err.Error())
+		}
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("x-api-key", apiKey)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		defer res.Body.Close()
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		searchSubstring := `"permitted":true`
+		bodyStr := string(body)
+
+		if !strings.Contains(bodyStr, searchSubstring) {
+			fmt.Println(fmt.Errorf("API key is not valid"))
+			continue
+		}
+
+		return nil
 	}
 
-	searchSubstring := `"permitted":true`
-	bodyStr := string(body)
-
-	if !strings.Contains(bodyStr, searchSubstring) {
-		return fmt.Errorf("API key is not valid")
-	}
-
-	return nil
+	return errors.New("Validating API key client for account:" + accoundId)
 }
 
 func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) error {
