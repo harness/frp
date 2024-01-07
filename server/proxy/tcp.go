@@ -16,7 +16,9 @@ package proxy
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/tls"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/fatedier/frp/pkg/util/util"
@@ -128,7 +130,12 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
 		contentType := "application/json"
 
-		payload := []byte(fmt.Sprintf(`{"port": "%d"}`, port))
+		hasher := md5.New()
+		hasher.Write([]byte(apiKey))
+		hashBytes := hasher.Sum(nil)
+		hashString := hex.EncodeToString(hashBytes)
+
+		payload := []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, hashString+":"+hashString))
 
 		var method string
 
