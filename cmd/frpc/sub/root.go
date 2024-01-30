@@ -113,8 +113,8 @@ func runClient(cfgFilePath string) error {
 		return err
 	}
 	if isLegacyFormat {
-		fmt.Printf("WARNING: ini format is deprecated and the support will be removed in the future, " +
-			"please use yaml/json/toml format instead!\n")
+		//fmt.Printf("WARNING: ini format is deprecated and the support will be removed in the future, " +
+		//	"please use yaml/json/toml format instead!\n")
 	}
 
 	warning, err := validation.ValidateAllClientConfig(cfg, pxyCfgs, visitorCfgs)
@@ -136,8 +136,8 @@ func startService(
 	log.InitLog(cfg.Log.To, cfg.Log.Level, cfg.Log.MaxDays, cfg.Log.DisablePrintColor)
 
 	if cfgFile != "" {
-		log.Info("start frpc service for config file [%s]", cfgFile)
-		defer log.Info("frpc service for config file [%s] stopped", cfgFile)
+		log.Info("start secure-connect service for config file [%s]", cfgFile)
+		defer log.Info("secure-connect service for config file [%s] stopped", cfgFile)
 	}
 	svr, err := client.NewService(cfg, pxyCfgs, visitorCfgs, cfgFile)
 	if err != nil {
