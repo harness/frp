@@ -158,14 +158,11 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println(req)
 		req.Header.Set("Content-Type", contentType)
 		req.Header.Set("x-api-key", apiKey)
 
 		resp, err := client.Do(req)
-		//fmt.Println(resp, err)
 		if err != nil {
-			fmt.Println(resp)
 			fmt.Printf("Error in validating API key %v", err.Error())
 			continue
 		}
