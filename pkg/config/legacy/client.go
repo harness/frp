@@ -168,7 +168,9 @@ type ClientCommonConf struct {
 	// Admin port must be set first.
 	PprofEnable bool `ini:"pprof_enable" json:"pprof_enable"`
 
-	ApiKey string `ini:"api_key" json:"api_key"`
+	ApiKey          string `ini:"api_key" json:"api_key"`
+	HarnessUsername string `ini:"harness_username" json:"harness_username"`
+	HarnessPassword string `ini:"harness_password" json:"harness_password"`
 }
 
 // Supported sources including: string(file path), []byte, Reader interface.

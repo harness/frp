@@ -71,7 +71,9 @@ type ClientCommonConfig struct {
 	// Include other config files for proxies.
 	IncludeConfigFiles []string `json:"includes,omitempty"`
 
-	ApiKey string `json:"api_key,omitempty"`
+	ApiKey          string `json:"api_key,omitempty"`
+	HarnessUsername string `json:"harness_username"`
+	HarnessPassword string `json:"harness_password"`
 }
 
 func (c *ClientCommonConfig) Complete() {
