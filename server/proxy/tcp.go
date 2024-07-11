@@ -163,7 +163,7 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Printf("Error in validating API key %v", err.Error())
+			fmt.Printf("Error in validating API key %s\n", err.Error())
 			continue
 		}
 		defer resp.Body.Close()
