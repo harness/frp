@@ -260,15 +260,17 @@ func (svr *Service) login() (conn net.Conn, cm *ConnectionManager, err error) {
 	}
 
 	loginMsg := &msg.Login{
-		Arch:      runtime.GOARCH,
-		Os:        runtime.GOOS,
-		PoolCount: svr.cfg.Transport.PoolCount,
-		User:      svr.cfg.User,
-		Version:   version.Full(),
-		Timestamp: time.Now().Unix(),
-		RunID:     svr.runID,
-		Metas:     svr.cfg.Metadatas,
-		ApiKey:    svr.cfg.ApiKey,
+		Arch:            runtime.GOARCH,
+		Os:              runtime.GOOS,
+		PoolCount:       svr.cfg.Transport.PoolCount,
+		User:            svr.cfg.User,
+		Version:         version.Full(),
+		Timestamp:       time.Now().Unix(),
+		RunID:           svr.runID,
+		Metas:           svr.cfg.Metadatas,
+		ApiKey:          svr.cfg.ApiKey,
+		HarnessUsername: svr.cfg.HarnessUsername,
+		HarnessPassword: svr.cfg.HarnessPassword,
 	}
 
 	// Add auth

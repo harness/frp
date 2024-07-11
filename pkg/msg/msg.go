@@ -65,16 +65,18 @@ var TypeNameNatHoleResp = reflect.TypeOf(&NatHoleResp{}).Elem().Name()
 
 // When frpc start, client send this message to login to server.
 type Login struct {
-	Version      string            `json:"version,omitempty"`
-	Hostname     string            `json:"hostname,omitempty"`
-	Os           string            `json:"os,omitempty"`
-	Arch         string            `json:"arch,omitempty"`
-	User         string            `json:"user,omitempty"`
-	PrivilegeKey string            `json:"privilege_key,omitempty"`
-	Timestamp    int64             `json:"timestamp,omitempty"`
-	RunID        string            `json:"run_id,omitempty"`
-	Metas        map[string]string `json:"metas,omitempty"`
-	ApiKey       string            `json:"api_key,omitempty"`
+	Version         string            `json:"version,omitempty"`
+	Hostname        string            `json:"hostname,omitempty"`
+	Os              string            `json:"os,omitempty"`
+	Arch            string            `json:"arch,omitempty"`
+	User            string            `json:"user,omitempty"`
+	PrivilegeKey    string            `json:"privilege_key,omitempty"`
+	Timestamp       int64             `json:"timestamp,omitempty"`
+	RunID           string            `json:"run_id,omitempty"`
+	Metas           map[string]string `json:"metas,omitempty"`
+	ApiKey          string            `json:"api_key,omitempty"`
+	HarnessUsername string            `json:"harness_username,omitempty"`
+	HarnessPassword string            `json:"harness_password,omitempty"`
 
 	// Some global configures.
 	PoolCount int `json:"pool_count,omitempty"`

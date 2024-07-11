@@ -83,7 +83,8 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 			}
 		}()
 
-		if err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false); err != nil {
+		if err = registerClient(pxy.BaseProxy.loginMsg.ApiKey, pxy.cfg.RemotePort, pxy.BaseProxy.serverCfg.HarnessEndpoint, false,
+			pxy.BaseProxy.loginMsg.HarnessUsername, pxy.BaseProxy.loginMsg.HarnessPassword); err != nil {
 			return
 		}
 		listener, errRet := net.Listen("tcp", net.JoinHostPort(pxy.serverCfg.ProxyBindAddr, strconv.Itoa(pxy.realBindPort)))
@@ -101,7 +102,8 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 	return
 }
 
-func registerClient(apiKey string, port int, endpoints string, shouldDelete bool) (err error) {
+func registerClient(apiKey string, port int, endpoints string, shouldDelete bool,
+	harnessUsername, harnessPassword string) (err error) {
 
 	client := &http.Client{}
 
@@ -130,12 +132,18 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
 		contentType := "application/json"
 
-		hasher := md5.New()
-		hasher.Write([]byte(apiKey))
-		hashBytes := hasher.Sum(nil)
-		hashString := hex.EncodeToString(hashBytes)
+		var uniqueSha string
+		if harnessUsername != "" && harnessPassword != "" {
+			uniqueSha = fmt.Sprintf("%s:%s", harnessUsername, harnessPassword)
+		} else {
+			hasher := md5.New()
+			hasher.Write([]byte(apiKey))
+			hashBytes := hasher.Sum(nil)
+			hashString := hex.EncodeToString(hashBytes)
+			uniqueSha = fmt.Sprintf("%s:%s", hashString, hashString)
+		}
 
-		payload := []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, hashString+":"+hashString))
+		payload := []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, uniqueSha))
 
 		var method string
 
@@ -150,13 +158,15 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 			fmt.Println(err)
 			continue
 		}
-
+		fmt.Println(req)
 		req.Header.Set("Content-Type", contentType)
 		req.Header.Set("x-api-key", apiKey)
 
 		resp, err := client.Do(req)
+		//fmt.Println(resp, err)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(resp)
+			fmt.Printf("Error in validating API key %v", err.Error())
 			continue
 		}
 		defer resp.Body.Close()
