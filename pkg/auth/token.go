@@ -138,10 +138,10 @@ func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) 
 		return nil
 	}
 
-	var err error
-	if err = validateApiKey(m.ApiKey, endPoint); err != nil {
-		return err
-	}
+	// var err error
+	// if err = validateApiKey(m.ApiKey, endPoint); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
