@@ -128,7 +128,7 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 
 	for _, endPoint := range result {
 		endPoint = strings.TrimSpace(endPoint)
-		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
+		url := fmt.Sprintf("%s/tunnel?accountIdentifier=%s", endPoint, accoundId)
 		contentType := "application/json"
 
 		var uniqueSha string
