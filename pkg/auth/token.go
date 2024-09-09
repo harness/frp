@@ -102,7 +102,6 @@ func validateApiKey(apiKey string, endPoints string) error {
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("x-api-key", apiKey)
 		res, err := http.DefaultClient.Do(req)
-		fmt.Println(err)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -116,7 +115,6 @@ func validateApiKey(apiKey string, endPoints string) error {
 
 		searchSubstring := `"permitted":true`
 		bodyStr := string(body)
-		fmt.Println(bodyStr)
 
 		if !strings.Contains(bodyStr, searchSubstring) {
 			fmt.Println(fmt.Errorf("API key is not valid"))
@@ -138,10 +136,10 @@ func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login, endPoint string) 
 		return nil
 	}
 
-	// var err error
-	// if err = validateApiKey(m.ApiKey, endPoint); err != nil {
-	// 	return err
-	// }
+	var err error
+	if err = validateApiKey(m.ApiKey, endPoint); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -16,9 +16,7 @@ package proxy
 
 import (
 	"bytes"
-	"crypto/md5"
 	"crypto/tls"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -130,21 +128,21 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 
 	for _, endPoint := range result {
 		endPoint = strings.TrimSpace(endPoint)
-		url := fmt.Sprintf("%s/tunnel?accountIdentifier=%s", endPoint, accoundId)
+		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
 		contentType := "application/json"
 
 		var uniqueSha string
 		if harnessUsername != "" && harnessPassword != "" {
 			uniqueSha = fmt.Sprintf("%s:%s", harnessUsername, harnessPassword)
-		} else {
-			hasher := md5.New()
-			hasher.Write([]byte(apiKey))
-			hashBytes := hasher.Sum(nil)
-			hashString := hex.EncodeToString(hashBytes)
-			uniqueSha = fmt.Sprintf("%s:%s", hashString, hashString)
 		}
 
-		payload := []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, uniqueSha))
+		var payload []byte
+
+		if uniqueSha != "" {
+			payload = []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, uniqueSha))
+		} else {
+			payload = []byte(fmt.Sprintf(`{"port": "%d"}`, port))
+		}
 
 		var method string
 
