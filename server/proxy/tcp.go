@@ -131,15 +131,15 @@ func registerClient(apiKey string, port int, endpoints string, shouldDelete bool
 		url := fmt.Sprintf("%s/ng/api/tunnel?accountIdentifier=%s", endPoint, accoundId)
 		contentType := "application/json"
 
-		var uniqueSha string
+		var userCredentials string
 		if harnessUsername != "" && harnessPassword != "" {
-			uniqueSha = fmt.Sprintf("%s:%s", harnessUsername, harnessPassword)
+			userCredentials = fmt.Sprintf("%s:%s", harnessUsername, harnessPassword)
 		}
 
 		var payload []byte
 
-		if uniqueSha != "" {
-			payload = []byte(fmt.Sprintf(`{"port": "%d", "uniqueSha": "%s"}`, port, uniqueSha))
+		if userCredentials != "" {
+			payload = []byte(fmt.Sprintf(`{"port": "%d", "userCredentials": "%s"}`, port, userCredentials))
 		} else {
 			payload = []byte(fmt.Sprintf(`{"port": "%d"}`, port))
 		}
