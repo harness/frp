@@ -205,7 +205,8 @@ func (pxy *BaseProxy) startCommonTCPListenersHandler() {
 						continue
 					}
 
-					registerClient(pxy.loginMsg.ApiKey, 0, pxy.serverCfg.HarnessEndpoint, true)
+					registerClient(pxy.loginMsg.ApiKey, 0, pxy.serverCfg.HarnessEndpoint, true,
+						pxy.loginMsg.HarnessUsername, pxy.loginMsg.HarnessPassword)
 					xl.Warn("listener is closed: %s", err)
 					return
 				}

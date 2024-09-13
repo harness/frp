@@ -188,7 +188,7 @@ func LoadClientConfig(path string) (
 		}
 		cliCfg = legacy.Convert_ClientCommonConf_To_v1(&legacyCommon)
 		for _, c := range legacyPxyCfgs {
-			pxyCfgs = append(pxyCfgs, legacy.Convert_ProxyConf_To_v1(c))
+			pxyCfgs = append(pxyCfgs, legacy.Convert_ProxyConf_To_v1(c, cliCfg.HarnessUsername, cliCfg.HarnessPassword))
 		}
 		for _, c := range legacyVisitorCfgs {
 			visitorCfgs = append(visitorCfgs, legacy.Convert_VisitorConf_To_v1(c))

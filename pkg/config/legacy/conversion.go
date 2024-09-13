@@ -15,6 +15,8 @@
 package legacy
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"strings"
 
 	"github.com/samber/lo"
@@ -26,6 +28,19 @@ import (
 func Convert_ClientCommonConf_To_v1(conf *ClientCommonConf) *v1.ClientCommonConfig {
 	out := &v1.ClientCommonConfig{}
 	out.ApiKey = conf.ApiKey
+	if conf.HarnessUsername != "" && conf.HarnessPassword != "" {
+		out.HarnessUsername = conf.HarnessUsername
+		out.HarnessPassword = conf.HarnessPassword
+	} else {
+		hasher := md5.New()
+		hasher.Write([]byte(conf.ApiKey))
+		hashBytes := hasher.Sum(nil)
+		hashString := hex.EncodeToString(hashBytes)
+
+		out.HarnessUsername = hashString
+		out.HarnessPassword = hashString
+	}
+
 	out.User = conf.User
 	out.Auth.Method = v1.AuthMethod(conf.ClientConfig.AuthenticationMethod)
 	out.Auth.Token = conf.ClientConfig.Token
@@ -183,7 +198,7 @@ func transformHeadersFromPluginParams(params map[string]string) v1.HeaderOperati
 	return out
 }
 
-func Convert_ProxyConf_To_v1_Base(conf ProxyConf) *v1.ProxyBaseConfig {
+func Convert_ProxyConf_To_v1_Base(conf ProxyConf, overrideUsername, overridePassword string) *v1.ProxyBaseConfig {
 	out := &v1.ProxyBaseConfig{}
 	base := conf.GetBaseConfig()
 
@@ -220,6 +235,13 @@ func Convert_ProxyConf_To_v1_Base(conf ProxyConf) *v1.ProxyBaseConfig {
 		out.Plugin.ClientPluginOptions = &v1.HTTPProxyPluginOptions{
 			HTTPUser:     base.PluginParams["plugin_http_user"],
 			HTTPPassword: base.PluginParams["plugin_http_passwd"],
+		}
+
+		if overrideUsername != "" && overridePassword != "" {
+			out.Plugin.ClientPluginOptions = &v1.HTTPProxyPluginOptions{
+				HTTPUser:     overrideUsername,
+				HTTPPassword: overridePassword,
+			}
 		}
 	case "https2http":
 		out.Plugin.ClientPluginOptions = &v1.HTTPS2HTTPPluginOptions{
@@ -258,8 +280,8 @@ func Convert_ProxyConf_To_v1_Base(conf ProxyConf) *v1.ProxyBaseConfig {
 	return out
 }
 
-func Convert_ProxyConf_To_v1(conf ProxyConf) v1.ProxyConfigurer {
-	outBase := Convert_ProxyConf_To_v1_Base(conf)
+func Convert_ProxyConf_To_v1(conf ProxyConf, overrideUsername, overridePassword string) v1.ProxyConfigurer {
+	outBase := Convert_ProxyConf_To_v1_Base(conf, overrideUsername, overridePassword)
 	var out v1.ProxyConfigurer
 	switch v := conf.(type) {
 	case *TCPProxyConf:
