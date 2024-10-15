@@ -15,7 +15,7 @@
 package legacy
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"strings"
 
@@ -32,7 +32,7 @@ func Convert_ClientCommonConf_To_v1(conf *ClientCommonConf) *v1.ClientCommonConf
 		out.HarnessUsername = conf.HarnessUsername
 		out.HarnessPassword = conf.HarnessPassword
 	} else {
-		hasher := md5.New()
+		hasher := sha256.New()
 		hasher.Write([]byte(conf.ApiKey))
 		hashBytes := hasher.Sum(nil)
 		hashString := hex.EncodeToString(hashBytes)
