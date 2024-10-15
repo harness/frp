@@ -2,6 +2,8 @@
 server_addr = ${REMOTE_SERVER}
 log_level = debug
 api_key = ${API_KEY}
+harness_username = ${USER_NAME}
+harness_password = ${USER_PASSWORD}
 [plugin_proxy-${REMOTE_PORT}]
 type = tcp
 remote_port = ${REMOTE_PORT}
