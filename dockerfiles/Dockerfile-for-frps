@@ -1,4 +1,4 @@
-FROM golang:1.21 AS building
+FROM golang:1.25 AS building
 
 COPY . /building
 WORKDIR /building
@@ -7,7 +7,7 @@ RUN git config --global --add safe.directory '*'
 
 RUN make frps
 
-FROM alpine:3
+FROM alpine:3.21
 
 COPY --from=building /building/bin/frps /usr/bin/frps
 

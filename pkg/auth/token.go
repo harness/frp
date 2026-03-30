@@ -97,7 +97,7 @@ func validateApiKey(apiKey string, endPoints string) error {
 
 		req, err := http.NewRequest("POST", reqUrl, bytes.NewReader([]byte(formated)))
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return fmt.Errorf("%s", err.Error())
 		}
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("x-api-key", apiKey)
