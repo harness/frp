@@ -2,7 +2,7 @@ FROM harness0.harness.io/oci/docker_artifacts/hhi/go:1.26.10@sha256:718fddf012b3
 FROM harness0.harness.io/oci/docker_artifacts/hhi/harnessos-alpine:1@sha256:290a37c85b4284d2c11fa0778e5da79643d912a1f5a57d6f701b77644503b7e7 AS building
 COPY --from=hhi-build-sdk-0 /usr/lib/go /usr/lib/go
 ENV PATH=/usr/lib/go/bin:$PATH GOPATH=/go GOTOOLCHAIN=local
-RUN apk add --no-cache git bash curl wget make build-base 'ca-certificates>=20261020-r0'
+RUN apk add --no-cache git make 'ca-certificates>=20261020-r0'
 
 COPY . /building
 WORKDIR /building
