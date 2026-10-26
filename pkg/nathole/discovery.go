@@ -19,7 +19,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/pion/stun/v3"
+	"github.com/pion/stun"
 )
 
 var responseTimeout = 3 * time.Second
