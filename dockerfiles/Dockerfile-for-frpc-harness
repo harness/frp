@@ -1,4 +1,4 @@
-FROM golang:1.25 AS building
+FROM golang:1.26.10-bookworm@sha256:632dff7351799a5a9954a48dc06670ade72ee44e8c351cdc0e5a57af2fea21af AS building
 
 COPY . /building
 WORKDIR /building
@@ -7,7 +7,7 @@ RUN git config --global --add safe.directory '*'
 
 RUN make frpc
 
-FROM alpine:3.21
+FROM alpine:3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 
 RUN apk add --no-cache gettext
 
